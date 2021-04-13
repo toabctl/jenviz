@@ -1,0 +1,8 @@
+dist
+*.egg-info/
+.eggs/
+*.pyc
+.tox
+*~
+*.snap
+jenviz.out*
