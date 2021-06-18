@@ -1,6 +1,6 @@
 name: snap
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   flake8:
