@@ -1,6 +1,6 @@
 name: snap
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   flake8:
@@ -18,3 +18,16 @@ jobs:
     - name: Lint with flake8
       run: |
         tox -elint
+  build-and-run-snap:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: snapcore/action-build@v1
+      id: snapcraft
+    - uses: actions/upload-artifact@v2
+      with:
+        name: snap
+        path: ${{ steps.snapcraft.outputs.snap }}
+    - run: |
+        sudo snap install --dangerous --classic ${{ steps.snapcraft.outputs.snap }}
+        jenviz -h

@@ -1,0 +1,44 @@
+---
+name: jenviz
+version: git
+base: core20
+summary: Visualize Jenkins job relationships
+description: |
+  jenviz is a command line tool to visualize your Jenkins job relationships.
+
+  Example usage:
+
+  jenviz --jenkins-url http://localhost:8080 \
+         --jenkins-user user \
+         --jenkins-password password \
+         --job-ignore-disabled my-job \
+         --output-view
+
+grade: stable
+confinement: classic
+
+apps:
+  jenviz:
+    command: bin/jenviz
+    plugs:
+      - network
+      - home
+    environment:
+       LC_ALL: C.UTF-8
+       PYTHONPATH: $SNAP/usr/lib/python3/dist-packages:$SNAP/lib/python3.8/site-packages/
+       LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/lib/
+
+parts:
+  jenviz:
+    plugin: python
+    source: .
+    build-packages:
+      - python3-setuptools-scm
+      # for python cryptography
+      - libffi-dev
+      - rustc
+      - cargo
+      - libssl-dev
+    stage-packages:
+      - graphviz
+      - libgvc6
