@@ -29,5 +29,5 @@ jobs:
         name: snap
         path: ${{ steps.snapcraft.outputs.snap }}
     - run: |
-        sudo snap install --dangerous --classic ${{ steps.snapcraft.outputs.snap }}
+        sudo snap install --dangerous --devmode ${{ steps.snapcraft.outputs.snap }}
         jenviz -h
