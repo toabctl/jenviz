@@ -20,9 +20,6 @@ confinement: classic
 apps:
   jenviz:
     command: bin/jenviz
-    plugs:
-      - network
-      - home
     environment:
        LC_ALL: C.UTF-8
        PYTHONPATH: $SNAP/usr/lib/python3/dist-packages:$SNAP/lib/python3.8/site-packages/
