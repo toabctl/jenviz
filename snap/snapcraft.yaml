@@ -15,7 +15,7 @@ description: |
          --output-view
 
 grade: stable
-confinement: devmode
+confinement: classic
 
 apps:
   jenviz:
