@@ -41,9 +41,10 @@ def _job_parameters_as_html(job):
 
 def _job_as_html(jenkins, job):
 
-    bgcolor = 'BGCOLOR="grey"' if job['disabled'] else ''
+    bgcolor = 'BGCOLOR="grey"' if hasattr(job, 'disabled') and job['disabled'] else ''
     html = f'<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" {bgcolor}>'
-    html += f'<TR><TD HREF="{job["url"]}">{job["name"]}{" (disabled)" if job["disabled"] else ""}</TD></TR>'
+    html += f'<TR><TD HREF="{job["url"]}">{job["name"]}'
+    html += f'{" (disabled)" if hasattr(job, "disabled") and job["disabled"] else ""}</TD></TR>'
     html += f'<TR><TD><FONT POINT-SIZE="{FONTSIZE_SMALL}">{job["_class"]}</FONT></TD></TR>'
     if job.get('lastBuild', None):
         html += _job_build_parameters_as_html(jenkins, job)
@@ -66,7 +67,7 @@ def _graph_create(graph, jenkins, job_name, job_ignore, job_ignore_disabled, job
             print(f'job "{downstream_job["name"]}" in ignore list. skipping ...')
             continue
         if job_ignore_disabled:
-            if downstream_job['disabled'] is True:
+            if hasattr(downstream_job, 'disabled') and downstream_job['disabled'] is True:
                 print(f'job "{downstream_job["name"]}" disabled. skipping ...')
                 continue
         if job_ignore_nobuild:
