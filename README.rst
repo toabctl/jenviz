@@ -15,6 +15,26 @@ Into a `virtualenv`::
   # now you can use the tool
   jenviz -h
 
+
+Configuration
+=============
+
+There are currently 2 ways to configure `jenviz`.
+
+1) adding the Jenkins `url`, `username` and `password` via command line parameters::
+
+     $ jenviz --jenkins-url https://my-jenkins-instance/ --jenkins-user joe --jenkins-password 123 SomeJobName
+
+2) using a `.ini` style configuration file and profiles::
+
+     $ cat ~/.config/jenviz.ini 
+     [profile1]
+     url=https://my-jenkins-instance
+     user=joe
+     password=123
+
+     $ jenviz -p profile1 SomeJobName
+
 Contributions
 =============
 

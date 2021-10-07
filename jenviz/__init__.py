@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 
 import argparse
+import configparser
+import os
+import sys
 
 import jenkins
 
@@ -41,9 +44,10 @@ def _job_parameters_as_html(job):
 
 def _job_as_html(jenkins, job):
 
-    bgcolor = 'BGCOLOR="grey"' if job['disabled'] else ''
+    bgcolor = 'BGCOLOR="grey"' if hasattr(job, 'disabled') and job['disabled'] else ''
     html = f'<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" {bgcolor}>'
-    html += f'<TR><TD HREF="{job["url"]}">{job["name"]}{" (disabled)" if job["disabled"] else ""}</TD></TR>'
+    html += f'<TR><TD HREF="{job["url"]}">{job["name"]}'
+    html += f'{" (disabled)" if hasattr(job, "disabled") and job["disabled"] else ""}</TD></TR>'
     html += f'<TR><TD><FONT POINT-SIZE="{FONTSIZE_SMALL}">{job["_class"]}</FONT></TD></TR>'
     if job.get('lastBuild', None):
         html += _job_build_parameters_as_html(jenkins, job)
@@ -66,7 +70,7 @@ def _graph_create(graph, jenkins, job_name, job_ignore, job_ignore_disabled, job
             print(f'job "{downstream_job["name"]}" in ignore list. skipping ...')
             continue
         if job_ignore_disabled:
-            if downstream_job['disabled'] is True:
+            if hasattr(downstream_job, 'disabled') and downstream_job['disabled'] is True:
                 print(f'job "{downstream_job["name"]}" disabled. skipping ...')
                 continue
         if job_ignore_nobuild:
@@ -76,18 +80,46 @@ def _graph_create(graph, jenkins, job_name, job_ignore, job_ignore_disabled, job
         graph.edge(job['name'], downstream_job['name'])
 
 
-def _jenkins(args):
+def _jenkins(url, user, password):
     """get a jenkinsapi jenkins instance"""
-    j = jenkins.Jenkins(args.jenkins_url,
-                        username=args.jenkins_user,
-                        password=args.jenkins_password)
+    j = jenkins.Jenkins(url,
+                        username=user,
+                        password=password)
     return j
+
+
+def _get_profile(args):
+    if not os.path.exists(args.jenviz_config_file):
+        print(f'jenviz configuration file {args.jenviz_config_file} does not exist')
+        sys.exit(1)
+    config = configparser.ConfigParser()
+    config.read(args.jenviz_config_file)
+    if args.jenviz_config_profile not in config:
+        print(f'can not find section {args.jenviz_config_profile} in {args.jenviz_config_file}')
+        sys.exit(1)
+    if 'url' not in config[args.jenviz_config_profile]:
+        print(f'url not in profile {args.jenviz_config_profile}')
+        sys.exit(1)
+    if 'user' not in config[args.jenviz_config_profile]:
+        print(f'user not in profile {args.jenviz_config_profile}')
+        sys.exit(1)
+    if 'password' not in config[args.jenviz_config_profile]:
+        print(f'password not in profile {args.jenviz_config_profile}')
+        sys.exit(1)
+    return (config[args.jenviz_config_profile]['url'],
+            config[args.jenviz_config_profile]['user'],
+            config[args.jenviz_config_profile]['password'])
 
 
 def _parser():
     parser = argparse.ArgumentParser(
         description='Visualize Jenkins jobs')
     jenkins_group = parser.add_argument_group(title='Jenkins')
+    jenkins_group.add_argument('--jenviz-config-file', '-c',
+                               default=os.path.join(os.path.expanduser('~'), '.config', 'jenviz.ini'),
+                               help='Path to the jenviz configuration file. Default: %(default)s')
+    jenkins_group.add_argument('--jenviz-config-profile', '-p',
+                               help='The profile (section) to use in the jenviz-config-file')
     jenkins_group.add_argument('--jenkins-url', help='The Jenkins url')
     jenkins_group.add_argument('--jenkins-user', help='The Jenkins username')
     jenkins_group.add_argument('--jenkins-password', help='The Jenkins password')
@@ -107,7 +139,13 @@ def _parser():
 def main():
     parser = _parser()
     args = parser.parse_args()
-    jenkins = _jenkins(args)
+    if args.jenviz_config_profile:
+        url, user, password = _get_profile(args)
+    else:
+        url = args.jenkins_url
+        user = args.jenkins_user
+        password = args.jenkins_password
+    jenkins = _jenkins(url, user, password)
     graph = Digraph(comment='Jenkins jobs', name=args.job_name)
     _graph_create(graph, jenkins, args.job_name, args.job_ignore, args.job_ignore_disabled,
                   args.job_ignore_nobuild)
