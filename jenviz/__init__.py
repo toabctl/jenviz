@@ -4,6 +4,7 @@ import argparse
 import configparser
 import os
 import sys
+import html as pyhtml
 
 import jenkins
 
@@ -24,7 +25,10 @@ def _job_build_parameters_as_html(jenkins, job):
 <B>Parameters (build #{job["lastBuild"]["number"]}, {build_info["result"]})</B></FONT></TD></TR>
 """
         for param in action['parameters']:
-            html += f'<TR><TD><FONT POINT-SIZE="{FONTSIZE_SMALL}">{param["name"]}: {param["value"]}</FONT></TD></TR>'
+            value = param["value"]
+            if isinstance(value, str):
+                value = pyhtml.escape(value)
+            html += f'<TR><TD><FONT POINT-SIZE="{FONTSIZE_SMALL}">{param["name"]}: {value}</FONT></TD></TR>'
     return html
 
 
