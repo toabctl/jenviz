@@ -112,11 +112,21 @@ def _get_profile(args):
 
 
 def _parser():
+    # snaps do set $HOME to something like
+    # /home/$USER/snap/jenkins-tool/$SNAP_VERSION
+    # the real home (usually /home/$USERNAME) is stored in $SNAP_REAL_HOME
+    # see https://snapcraft.io/docs/environment-variables
+    SNAP_REAL_HOME = os.getenv('SNAP_REAL_HOME')
+    if SNAP_REAL_HOME:
+        conf_default = os.path.join(os.path.join(SNAP_REAL_HOME, '.config', 'jenviz.ini'))
+    else:
+        conf_default = os.path.join(os.path.expanduser('~'), '.config', 'jenviz.ini')
+
     parser = argparse.ArgumentParser(
         description='Visualize Jenkins jobs')
     jenkins_group = parser.add_argument_group(title='Jenkins')
     jenkins_group.add_argument('--jenviz-config-file', '-c',
-                               default=os.path.join(os.path.expanduser('~'), '.config', 'jenviz.ini'),
+                               default=conf_default,
                                help='Path to the jenviz configuration file. Default: %(default)s')
     jenkins_group.add_argument('--jenviz-config-profile', '-p',
                                help='The profile (section) to use in the jenviz-config-file')
