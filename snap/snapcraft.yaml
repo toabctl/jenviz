@@ -15,15 +15,13 @@ description: |
          --output-view
 
 grade: stable
-confinement: classic
+confinement: strict
 
-apps:
-  jenviz:
-    command: bin/jenviz
-    environment:
-       LC_ALL: C.UTF-8
-       PYTHONPATH: $SNAP/usr/lib/python3/dist-packages:$SNAP/lib/python3.8/site-packages/
-       LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/lib/
+plugs:
+  dot-config-jenviz:
+    interface: personal-files
+    read:
+    - $HOME/.config/jenviz.ini
 
 parts:
   jenviz:
@@ -39,3 +37,15 @@ parts:
     stage-packages:
       - graphviz
       - libgvc6
+
+apps:
+  jenviz:
+    command: bin/jenviz
+    environment:
+       LC_ALL: C.UTF-8
+       PYTHONPATH: $SNAP/usr/lib/python3/dist-packages:$SNAP/lib/python3.8/site-packages/
+       LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/lib/
+    plugs:
+      - home
+      - network
+      - dot-config-jenviz
